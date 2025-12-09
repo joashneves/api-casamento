@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": os.getenv("CORS_ORIGIN", "*")}})
+CORS(app, resources={r"/*": {"origins": os.getenv("CORS_ORIGIN", "*")}})
 
 # Configuração do banco de dados
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://user:password@db:5432/rsvp_db')

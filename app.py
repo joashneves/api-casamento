@@ -1,10 +1,15 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
+
+# Import Blueprints
+from routes.rsvp import rsvp_blueprint
+from routes.auth import auth_blueprint
+from routes.gift import gift_blueprint
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -13,41 +18,25 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://user:password@db:5432/rsvp_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-from models.rsvp import db, RSVP
+from models.rsvp import db
+from models.gift import Gift # Import Gift model
 db.init_app(app)
+
+# Register Blueprints
+app.register_blueprint(rsvp_blueprint)
+app.register_blueprint(auth_blueprint)
+app.register_blueprint(gift_blueprint)
 
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    response.headers['Access-control-allow-headers'] = 'Content-Type, Authorization'
     return response
 
 @app.route('/')
 def hello_world():
     return jsonify({"message": "Olá, mundo!"})
-
-@app.route('/api/rsvp', methods=['POST'])
-def handle_rsvp():
-    data = request.get_json()
-
-    if not data or 'name' not in data or 'attending' not in data:
-        return jsonify({'error': 'Dados inválidos: nome e presença são obrigatórios.'}), 400
-
-    name = data.get('name')
-    attending = data.get('attending')
-    message = data.get('message', '')
-
-    new_rsvp = RSVP(name=name, attending=attending, message=message)
-    db.session.add(new_rsvp)
-    db.session.commit()
-
-    return jsonify({'message': 'Confirmação recebida com sucesso!', 'id': new_rsvp.id}), 201
-
-@app.route('/api/rsvps', methods=['GET'])
-def get_all_rsvps():
-    rsvps = RSVP.query.all()
-    return jsonify([rsvp.to_dict() for rsvp in rsvps]), 200
 
 if __name__ == '__main__':
     with app.app_context():

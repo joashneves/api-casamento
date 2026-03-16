@@ -10,6 +10,7 @@ load_dotenv()
 from routes.rsvp import rsvp_blueprint
 from routes.auth import auth_blueprint
 from routes.gift import gift_blueprint
+from routes.images import images_blueprint
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -26,6 +27,7 @@ db.init_app(app)
 app.register_blueprint(rsvp_blueprint)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(gift_blueprint)
+app.register_blueprint(images_blueprint)
 
 @app.after_request
 def add_cors_headers(response):

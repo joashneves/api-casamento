@@ -6,6 +6,11 @@ services:
       - ../.env.development
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d casamento"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
       
   web:
     container_name: "flask-api-web"
@@ -16,11 +21,14 @@ services:
       - "5000:5000"
     volumes:
       - ..:/app # Mount the api-casamento directory into the container
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@database:5432/casamento
     env_file:
       - ../.env
       - ../.env.development
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     command: python app.py
 
 volumes:

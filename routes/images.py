@@ -24,6 +24,8 @@ def list_images():
 @images_blueprint.route('/api/images/<path:filename>', methods=['GET'])
 def download_image(filename):
     try:
-        return send_from_directory(IMAGES_FOLDER, filename)
+        response = send_from_directory(IMAGES_FOLDER, filename)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
     except Exception as e:
         return jsonify({"error": "Imagem não encontrada"}), 404
